@@ -17,7 +17,7 @@ public:
             }),
             // pred b { }
             Predicate({}),
-            // pred c(Nat) { 
+            // pred c(Nat) {
             //     c(zero) <- true;
             //     c(s(let x)) <- c(x);
             // }
@@ -48,7 +48,26 @@ public:
                     Expression(PredicateReference(2, { Value(VariableRef(0, true, true)) })),
                     1
                 )
-            })
+            }),
+            // pred f(Nat,Nat) {
+            //     f(zero, zero) <- true;
+            //     f(s(let x), s(x)) <- true;
+            // }
+            Predicate({
+                Implication(
+                    PredicateReference(5, { ConstructorRef(0, {}), ConstructorRef(0, {}) }),
+                    TruthValue(true),
+                    0
+                ),
+                Implication(
+                    PredicateReference(5, {
+                        ConstructorRef(1, { Value(VariableRef(0, true, false)) }),
+                        ConstructorRef(1, { Value(VariableRef(0, false, false)) })
+                    }),
+                    TruthValue(true),
+                    2
+                )
+            }),
         },
         Optional<PredicateReference>()
     );
@@ -89,6 +108,17 @@ TEST_F(TestInterpreter, prove_predicate_with_existentially_quantified_variable) 
     EXPECT_TRUE(
         program.prove(
             Expression(PredicateReference(4, {}))
+        )
+    );
+}
+
+TEST_F(TestInterpreter, prove_predicate_with_cyclic_term) {
+    EXPECT_FALSE(
+        program.prove(
+            Expression(PredicateReference(5, {
+                Value(VariableRef(1, true, true)),
+                ConstructorRef(1, { Value(VariableRef(1, false, true)) })
+            }))
         )
     );
 }
