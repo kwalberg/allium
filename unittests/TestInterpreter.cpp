@@ -65,7 +65,20 @@ public:
                         ConstructorRef(1, { Value(VariableRef(0, false, false)) })
                     }),
                     TruthValue(true),
-                    2
+                    1
+                )
+            }),
+            // pred g {
+            //     g <- f(let x, s(x));
+            // }
+            Predicate({
+                Implication(
+                    PredicateReference(6, {}),
+                    Expression(PredicateReference(5, {
+                        Value(VariableRef(0, true, true)),
+                        ConstructorRef(1, { Value(VariableRef(0, false, true)) })
+                    })),
+                    1
                 )
             }),
         },
@@ -113,14 +126,14 @@ TEST_F(TestInterpreter, prove_predicate_with_existentially_quantified_variable) 
 }
 
 TEST_F(TestInterpreter, prove_predicate_with_cyclic_term) {
-    EXPECT_FALSE(
-        program.prove(
-            Expression(PredicateReference(5, {
-                Value(VariableRef(1, true, true)),
-                ConstructorRef(1, { Value(VariableRef(1, false, true)) })
-            }))
-        )
-    );
+  // prove that f(let x, s(x)) has no solution
+  // Note: the predicate passed to `prove` must have an "empty" witness because
+  // main doesn't take arguments, so we add a layer of indirection.
+  EXPECT_FALSE(
+      program.prove(
+          Expression(PredicateReference(6, {}))
+      )
+  );
 }
 
 TEST_F(TestInterpreter, prove_conjunction_of_truth_values) {
